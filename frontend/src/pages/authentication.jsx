@@ -36,11 +36,7 @@ export default function Authentication() {
       }
 
       if (formState === 1) {
-        const result = await handleRegister(
-          name,
-          username,
-          password
-        );
+        const result = await handleRegister(name, username, password);
 
         setMessage(result);
         setOpen(true);
@@ -74,11 +70,9 @@ export default function Authentication() {
           width: "100%",
           height: "100vh",
           overflow: "hidden",
-          background:
-            "linear-gradient(to right,rgb(15, 23, 42),rgb(30, 41, 59))",
+          background: "linear-gradient(135deg, #0d0e12, #171821)",
         }}
       >
-
         <Grid
           item
           xs={12}
@@ -88,10 +82,8 @@ export default function Authentication() {
             height: "100vh",
             minWidth: 0,
             overflow: "hidden",
-
             display: { xs: "none", md: "flex" },
             flexDirection: "column",
-
             flex: { md: "0 0 50%" },
             maxWidth: { md: "50%" },
           }}
@@ -124,16 +116,12 @@ export default function Authentication() {
             minHeight: 0,
             minWidth: 0,
             overflowY: "auto",
-
-            background: "#111827",
-
+            background: "#111217",
             display: "flex",
             justifyContent: "center",
             alignItems: "center",
-
             flex: { xs: "1 1 100%", md: "0 0 50%" },
             maxWidth: { xs: "100%", md: "50%" },
-
             p: { xs: 3, sm: 4 },
           }}
         >
@@ -145,18 +133,12 @@ export default function Authentication() {
               alignSelf: "center",
               p: { xs: 3.5, sm: 4.5 },
               borderRadius: "22px",
-
-              background: "#1f2937",
-
+              background: "#181920",
               backdropFilter: "blur(18px)",
-
-              border: "1px solid rgba(255,255,255,0.1)",
-
-              boxShadow:
-                "0 8px 32px rgba(0,0,0,0.35)",
+              border: "1px solid rgba(255,255,255,0.08)",
+              boxShadow: "0 8px 32px rgba(0,0,0,0.5)",
             }}
           >
-
             <Box
               sx={{
                 display: "flex",
@@ -171,6 +153,7 @@ export default function Authentication() {
                   height: 54,
                   bgcolor: "#7c3aed",
                   mb: 2,
+                  boxShadow: "0 4px 14px rgba(124, 58, 237, 0.4)",
                 }}
               >
                 <LockOutlinedIcon sx={{ fontSize: 28 }} />
@@ -184,11 +167,8 @@ export default function Authentication() {
                   color: "white",
                 }}
               >
-                {formState === 0
-                  ? "Welcome Back"
-                  : "Create Account"}
+                {formState === 0 ? "Welcome Back" : "Create Account"}
               </Typography>
-
             </Box>
 
             <Box
@@ -200,11 +180,7 @@ export default function Authentication() {
               }}
             >
               <Button
-                variant={
-                  formState === 0
-                    ? "contained"
-                    : "outlined"
-                }
+                variant={formState === 0 ? "contained" : "outlined"}
                 onClick={() => setFormState(0)}
                 sx={{
                   flex: 1,
@@ -212,25 +188,28 @@ export default function Authentication() {
                   borderRadius: "12px",
                   py: 1.1,
                   fontSize: "0.9rem",
-                  ...(formState !== 0 && {
-                    color: "#e5e7eb",
-                    borderColor: "rgba(255,255,255,0.35)",
-                    "&:hover": {
-                      borderColor: "rgba(255,255,255,0.55)",
-                      backgroundColor: "rgba(255,255,255,0.06)",
-                    },
-                  }),
+                  fontWeight: "600",
+                  textTransform: "none",
+                  ...(formState === 0
+                    ? {
+                        background: "linear-gradient(135deg, #7c3aed, #a855f7)",
+                        boxShadow: "0 4px 12px rgba(124, 58, 237, 0.35)",
+                      }
+                    : {
+                        color: "#e4e4e7",
+                        borderColor: "rgba(255,255,255,0.25)",
+                        "&:hover": {
+                          borderColor: "rgba(255,255,255,0.45)",
+                          backgroundColor: "rgba(255,255,255,0.06)",
+                        },
+                      }),
                 }}
               >
                 Sign In
               </Button>
 
               <Button
-                variant={
-                  formState === 1
-                    ? "contained"
-                    : "outlined"
-                }
+                variant={formState === 1 ? "contained" : "outlined"}
                 onClick={() => setFormState(1)}
                 sx={{
                   flex: 1,
@@ -238,14 +217,21 @@ export default function Authentication() {
                   borderRadius: "12px",
                   py: 1.1,
                   fontSize: "0.9rem",
-                  ...(formState !== 1 && {
-                    color: "#e5e7eb",
-                    borderColor: "rgba(255,255,255,0.35)",
-                    "&:hover": {
-                      borderColor: "rgba(255,255,255,0.55)",
-                      backgroundColor: "rgba(255,255,255,0.06)",
-                    },
-                  }),
+                  fontWeight: "600",
+                  textTransform: "none",
+                  ...(formState === 1
+                    ? {
+                        background: "linear-gradient(135deg, #7c3aed, #a855f7)",
+                        boxShadow: "0 4px 12px rgba(124, 58, 237, 0.35)",
+                      }
+                    : {
+                        color: "#e4e4e7",
+                        borderColor: "rgba(255,255,255,0.25)",
+                        "&:hover": {
+                          borderColor: "rgba(255,255,255,0.45)",
+                          backgroundColor: "rgba(255,255,255,0.06)",
+                        },
+                      }),
                 }}
               >
                 Sign Up
@@ -260,9 +246,7 @@ export default function Authentication() {
                   fullWidth
                   label="Full Name"
                   value={name}
-                  onChange={(e) =>
-                    setName(e.target.value)
-                  }
+                  onChange={(e) => setName(e.target.value)}
                   sx={textFieldStyle}
                 />
               )}
@@ -273,9 +257,7 @@ export default function Authentication() {
                 fullWidth
                 label="Email Address"
                 value={username}
-                onChange={(e) =>
-                  setUsername(e.target.value)
-                }
+                onChange={(e) => setUsername(e.target.value)}
                 sx={textFieldStyle}
               />
 
@@ -286,16 +268,14 @@ export default function Authentication() {
                 label="Password"
                 type="password"
                 value={password}
-                onChange={(e) =>
-                  setPassword(e.target.value)
-                }
+                onChange={(e) => setPassword(e.target.value)}
                 sx={textFieldStyle}
               />
 
               {error && (
                 <Typography
                   sx={{
-                    color: "#ff6b6b",
+                    color: "#f87171",
                     mt: 1,
                     fontSize: "14px",
                   }}
@@ -314,19 +294,15 @@ export default function Authentication() {
                   borderRadius: "14px",
                   fontWeight: "bold",
                   fontSize: "0.95rem",
-
-                  background:
-                    "linear-gradient(90deg,#7c3aed,#2563eb)",
-
+                  textTransform: "none",
+                  background: "linear-gradient(135deg, #7c3aed, #a855f7)",
+                  boxShadow: "0 4px 16px rgba(124, 58, 237, 0.4)",
                   "&:hover": {
-                    background:
-                      "linear-gradient(90deg,#6d28d9,#1d4ed8)",
+                    background: "linear-gradient(135deg, #6d28d9, #9333ea)",
                   },
                 }}
               >
-                {formState === 0
-                  ? "LOGIN"
-                  : "CREATE ACCOUNT"}
+                {formState === 0 ? "Sign In" : "Create Account"}
               </Button>
             </Box>
           </Box>
@@ -350,7 +326,7 @@ const textFieldStyle = {
     color: "white",
 
     "& fieldset": {
-      borderColor: "rgba(255,255,255,0.1)",
+      borderColor: "rgba(255,255,255,0.12)",
     },
 
     "&:hover fieldset": {
@@ -358,7 +334,7 @@ const textFieldStyle = {
     },
 
     "&.Mui-focused fieldset": {
-      borderColor: "#7c3aed",
+      borderColor: "#a855f7",
     },
   },
 
@@ -367,6 +343,6 @@ const textFieldStyle = {
   },
 
   "& .MuiInputLabel-root.Mui-focused": {
-    color: "#a78bfa",
+    color: "#c084fc",
   },
 };

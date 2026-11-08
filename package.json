@@ -1,0 +1,15 @@
+{
+  "name": "connecto",
+  "version": "1.0.0",
+  "description": "Connecto - Real-time Video Meeting Application",
+  "private": true,
+  "scripts": {
+    "start": "node backend/src/app.js",
+    "backend": "npm start --prefix backend",
+    "frontend": "npm start --prefix frontend",
+    "build": "npm run build --prefix frontend"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
