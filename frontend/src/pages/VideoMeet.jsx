@@ -105,6 +105,8 @@ export default function VideoMeetComponent() {
 
     let [username, setUsername] = useState("");
 
+    let [copied, setCopied] = useState(false);
+
     const videoRef = useRef([]);
 
     let [videos, setVideos] = useState([]);
@@ -112,6 +114,13 @@ export default function VideoMeetComponent() {
     useEffect(() => {
         getPermissions();
     }, []);
+
+    // Ensure local stream is bound to current video element
+    useEffect(() => {
+        if (localVideoref.current && window.localStream) {
+            localVideoref.current.srcObject = window.localStream;
+        }
+    }, [videos.length, askForUsername]);
 
     let getDisplayMedia = () => {
         if (screen) {
@@ -226,7 +235,9 @@ export default function VideoMeetComponent() {
 
             let blackSilence = (...args) => new MediaStream([black(...args), silence()]);
             window.localStream = blackSilence();
-            localVideoref.current.srcObject = window.localStream;
+            if (localVideoref.current) {
+                localVideoref.current.srcObject = window.localStream;
+            }
 
             renegotiatePeers();
         });
@@ -239,7 +250,9 @@ export default function VideoMeetComponent() {
         } catch (e) { console.log(e); }
 
         window.localStream = stream;
-        localVideoref.current.srcObject = stream;
+        if (localVideoref.current) {
+            localVideoref.current.srcObject = stream;
+        }
 
         for (let id in connections) {
             if (id === socketIdRef.current) continue;
@@ -275,7 +288,9 @@ export default function VideoMeetComponent() {
                     console.log(e);
                     let blackSilence = (...args) => new MediaStream([black(...args), silence()]);
                     window.localStream = blackSilence();
-                    localVideoref.current.srcObject = window.localStream;
+                    if (localVideoref.current) {
+                        localVideoref.current.srcObject = window.localStream;
+                    }
                     renegotiatePeers();
                 });
         });
@@ -651,6 +666,7 @@ export default function VideoMeetComponent() {
                 </ThemeProvider>
             ) : (
                 <div className={styles.meetVideoContainer}>
+                    {/* Chat Drawer (Top-Right: completely separated from Bottom-Left user video) */}
                     {showModal ? (
                         <div className={styles.chatRoom}>
                             <div className={styles.chatContainer}>
@@ -727,6 +743,7 @@ export default function VideoMeetComponent() {
                         </div>
                     ) : null}
 
+                    {/* Bottom Controls Bar (Centered horizontally at the bottom) */}
                     <div className={styles.buttonContainers}>
                         <IconButton
                             onClick={handleVideo}
@@ -801,24 +818,71 @@ export default function VideoMeetComponent() {
                         </Badge>
                     </div>
 
-                    <video className={styles.meetUserVideo} ref={localVideoref} autoPlay muted playsInline />
-
-                    <div className={styles.conferenceView}>
-                        {videos.map((video) => (
-                            <div key={video.socketId}>
+                    {/* Main Video View: Separates solo vs multi-party */}
+                    {videos.length === 0 ? (
+                        <div className={`${styles.waitingContainer} ${showModal ? styles.waitingWithChat : ""}`}>
+                            <div className={styles.mainSoloVideoWrapper}>
                                 <video
-                                    data-socket={video.socketId}
-                                    ref={(ref) => {
-                                        if (ref && video.stream) {
-                                            ref.srcObject = video.stream;
-                                        }
-                                    }}
+                                    className={styles.mainSoloVideo}
+                                    ref={localVideoref}
                                     autoPlay
+                                    muted
                                     playsInline
                                 />
+                                <div className={styles.videoBadge}>You (Host)</div>
                             </div>
-                        ))}
-                    </div>
+                            <div className={styles.inviteCard}>
+                                <h3>Waiting for others to join...</h3>
+                                <p>Share this meeting link so friends or colleagues can join your call</p>
+                                <div className={styles.inviteLinkRow}>
+                                    <span className={styles.inviteLinkText}>{window.location.href}</span>
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            navigator.clipboard.writeText(window.location.href);
+                                            setCopied(true);
+                                            setTimeout(() => setCopied(false), 2000);
+                                        }}
+                                        className={styles.copyButton}
+                                    >
+                                        {copied ? "Copied!" : "Copy Link"}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    ) : (
+                        <>
+                            {/* Local Video PIP in Bottom-Left: will never overlap with Chat on the Right */}
+                            <div className={styles.meetUserVideoWrapper}>
+                                <video
+                                    className={styles.meetUserVideo}
+                                    ref={localVideoref}
+                                    autoPlay
+                                    muted
+                                    playsInline
+                                />
+                                <div className={styles.videoBadge}>You</div>
+                            </div>
+
+                            {/* Remote Participants Grid */}
+                            <div className={`${styles.conferenceView} ${showModal ? styles.conferenceWithChat : ""}`}>
+                                {videos.map((video) => (
+                                    <div className={styles.remoteVideoCard} key={video.socketId}>
+                                        <video
+                                            data-socket={video.socketId}
+                                            ref={(ref) => {
+                                                if (ref && video.stream) {
+                                                    ref.srcObject = video.stream;
+                                                }
+                                            }}
+                                            autoPlay
+                                            playsInline
+                                        />
+                                    </div>
+                                ))}
+                            </div>
+                        </>
+                    )}
                 </div>
             )}
         </div>

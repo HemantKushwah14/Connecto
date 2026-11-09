@@ -9,6 +9,7 @@ import Grid from "@mui/material/Grid";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import Typography from "@mui/material/Typography";
 import Snackbar from "@mui/material/Snackbar";
+import CircularProgress from "@mui/material/CircularProgress";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import { AuthContext } from "../contexts/AuthContext";
 import wallpaper from "../Assests/image2.png";
@@ -27,9 +28,26 @@ export default function Authentication() {
   const [message, setMessage] = React.useState("");
   const [formState, setFormState] = React.useState(0);
   const [open, setOpen] = React.useState(false);
+  const [loading, setLoading] = React.useState(false);
+
   const { handleRegister, handleLogin } = React.useContext(AuthContext);
 
-  const handleAuth = async () => {
+  const handleAuth = async (e) => {
+    if (e) e.preventDefault();
+    setError("");
+
+    if (!username.trim() || !password.trim()) {
+      setError("Please fill in both email and password.");
+      return;
+    }
+
+    if (formState === 1 && !name.trim()) {
+      setError("Please enter your full name.");
+      return;
+    }
+
+    setLoading(true);
+
     try {
       if (formState === 0) {
         await handleLogin(username, password);
@@ -38,7 +56,7 @@ export default function Authentication() {
       if (formState === 1) {
         const result = await handleRegister(name, username, password);
 
-        setMessage(result);
+        setMessage(result || "Account created successfully! Please sign in.");
         setOpen(true);
 
         setName("");
@@ -49,13 +67,17 @@ export default function Authentication() {
         setFormState(0);
       }
     } catch (err) {
-      console.log(err);
+      console.error("Auth error:", err);
 
-      const message =
+      const errorMsg =
         err?.response?.data?.message ||
-        "Something went wrong";
+        (err?.message === "Network Error"
+          ? "Unable to reach server. Please ensure the backend is running on port 8000."
+          : err?.message || "Something went wrong. Please try again.");
 
-      setError(message);
+      setError(errorMsg);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -181,7 +203,10 @@ export default function Authentication() {
             >
               <Button
                 variant={formState === 0 ? "contained" : "outlined"}
-                onClick={() => setFormState(0)}
+                onClick={() => {
+                  setFormState(0);
+                  setError("");
+                }}
                 sx={{
                   flex: 1,
                   minWidth: 0,
@@ -210,7 +235,10 @@ export default function Authentication() {
 
               <Button
                 variant={formState === 1 ? "contained" : "outlined"}
-                onClick={() => setFormState(1)}
+                onClick={() => {
+                  setFormState(1);
+                  setError("");
+                }}
                 sx={{
                   flex: 1,
                   minWidth: 0,
@@ -238,7 +266,7 @@ export default function Authentication() {
               </Button>
             </Box>
 
-            <Box component="form" noValidate>
+            <Box component="form" noValidate onSubmit={handleAuth}>
               {formState === 1 && (
                 <TextField
                   margin="normal"
@@ -255,7 +283,7 @@ export default function Authentication() {
                 margin="normal"
                 required
                 fullWidth
-                label="Email Address"
+                label="Email / Username"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 sx={textFieldStyle}
@@ -276,8 +304,13 @@ export default function Authentication() {
                 <Typography
                   sx={{
                     color: "#f87171",
-                    mt: 1,
+                    mt: 1.5,
                     fontSize: "14px",
+                    textAlign: "center",
+                    background: "rgba(248, 113, 113, 0.1)",
+                    p: 1,
+                    borderRadius: "8px",
+                    border: "1px solid rgba(248, 113, 113, 0.2)",
                   }}
                 >
                   {error}
@@ -286,8 +319,9 @@ export default function Authentication() {
 
               <Button
                 fullWidth
+                type="submit"
                 variant="contained"
-                onClick={handleAuth}
+                disabled={loading}
                 sx={{
                   mt: 3.5,
                   py: 1.4,
@@ -300,9 +334,19 @@ export default function Authentication() {
                   "&:hover": {
                     background: "linear-gradient(135deg, #6d28d9, #9333ea)",
                   },
+                  "&.Mui-disabled": {
+                    background: "rgba(255, 255, 255, 0.12)",
+                    color: "rgba(255, 255, 255, 0.35)",
+                  },
                 }}
               >
-                {formState === 0 ? "Sign In" : "Create Account"}
+                {loading ? (
+                  <CircularProgress size={24} sx={{ color: "white" }} />
+                ) : formState === 0 ? (
+                  "Sign In"
+                ) : (
+                  "Create Account"
+                )}
               </Button>
             </Box>
           </Box>

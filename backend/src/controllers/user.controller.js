@@ -1,9 +1,13 @@
-
 import httpStatus from "http-status";
 import { User } from "../models/user.model.js";
 import bcrypt from "bcrypt";
 import crypto from "crypto";
 import { Meeting } from "../models/meeting.model.js";
+
+// Escape regex special characters helper
+const escapeRegex = (string) => {
+    return string.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+};
 
 // ================= LOGIN =================
 
@@ -13,21 +17,26 @@ const login = async (req, res) => {
 
         if (!username || !password) {
             return res.status(httpStatus.BAD_REQUEST).json({
-                message: "Username and password are required"
+                message: "Username/Email and password are required"
             });
         }
 
-        const user = await User.findOne({ username });
+        const cleanUsername = username.trim();
+
+        // Case-insensitive user lookup
+        const user = await User.findOne({
+            username: { $regex: new RegExp(`^${escapeRegex(cleanUsername)}$`, "i") }
+        });
 
         if (!user) {
             return res.status(httpStatus.NOT_FOUND).json({
-                message: "User Not Found"
+                message: "User not found. Please register an account first."
             });
         }
 
         if (!user.password) {
             return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
-                message: "Invalid user account"
+                message: "Invalid account setup. Please contact support or re-register."
             });
         }
 
@@ -38,7 +47,7 @@ const login = async (req, res) => {
 
         if (!isPasswordCorrect) {
             return res.status(httpStatus.UNAUTHORIZED).json({
-                message: "Invalid Username or Password"
+                message: "Invalid username or password"
             });
         }
 
@@ -69,19 +78,29 @@ const register = async (req, res) => {
     try {
         const { name, username, password } = req.body || {};
 
-        // Validate input
         if (!name || !username || !password) {
             return res.status(httpStatus.BAD_REQUEST).json({
-                message: "Name, username and password are required"
+                message: "Name, username/email and password are required"
             });
         }
 
-        // Check existing user
-        const existingUser = await User.findOne({ username });
+        const cleanName = name.trim();
+        const cleanUsername = username.trim();
+
+        if (password.length < 4) {
+            return res.status(httpStatus.BAD_REQUEST).json({
+                message: "Password must be at least 4 characters long"
+            });
+        }
+
+        // Check if user already exists (case-insensitive)
+        const existingUser = await User.findOne({
+            username: { $regex: new RegExp(`^${escapeRegex(cleanUsername)}$`, "i") }
+        });
 
         if (existingUser) {
             return res.status(httpStatus.CONFLICT).json({
-                message: "User already exists"
+                message: "An account with this username/email already exists"
             });
         }
 
@@ -90,8 +109,8 @@ const register = async (req, res) => {
 
         // Create new user
         const newUser = new User({
-            name,
-            username,
+            name: cleanName,
+            username: cleanUsername,
             password: hashedPassword
         });
 
@@ -141,7 +160,7 @@ const getUserHistory = async (req, res) => {
         console.error("History Error:", error);
 
         return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
-            message: "Something went wrong"
+            message: "Something went wrong fetching history"
         });
     }
 };
@@ -182,7 +201,7 @@ const addToHistory = async (req, res) => {
         console.error("Add History Error:", error);
 
         return res.status(httpStatus.INTERNAL_SERVER_ERROR).json({
-            message: "Something went wrong"
+            message: "Something went wrong adding to history"
         });
     }
 };
